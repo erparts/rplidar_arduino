@@ -75,7 +75,6 @@ bool RPLidar::isOpen()
 u_result RPLidar::getHealth(rplidar_response_device_health_t & healthinfo, _u32 timeout)
 {
     _u32 currentTs = millis();
-    _u32 remainingtime;
 
     _u8 *infobuf = (_u8 *)&healthinfo;
     _u8 recvPos = 0;
@@ -104,7 +103,7 @@ u_result RPLidar::getHealth(rplidar_response_device_health_t & healthinfo, _u32 
             return RESULT_INVALID_DATA;
         }
 
-        while ((remainingtime=millis() - currentTs) <= timeout) {
+        while (millis() - currentTs <= timeout) {
             int currentbyte = _bined_serialdev->read();
             if (currentbyte < 0) continue;
 
@@ -123,7 +122,6 @@ u_result RPLidar::getDeviceInfo(rplidar_response_device_info_t & info, _u32 time
 {
     _u8  recvPos = 0;
     _u32 currentTs = millis();
-    _u32 remainingtime;
     _u8 *infobuf = (_u8*)&info;
     rplidar_ans_header_t response_header;
     u_result  ans;
@@ -148,7 +146,7 @@ u_result RPLidar::getDeviceInfo(rplidar_response_device_info_t & info, _u32 time
             return RESULT_INVALID_DATA;
         }
 
-        while ((remainingtime=millis() - currentTs) <= timeout) {
+        while (millis() - currentTs <= timeout) {
             int currentbyte = _bined_serialdev->read();
             if (currentbyte<0) continue;
             infobuf[recvPos++] = currentbyte;
@@ -205,14 +203,17 @@ u_result RPLidar::startScan(bool force, _u32 timeout)
 u_result RPLidar::waitPoint(_u32 timeout)
 {
    _u32 currentTs = millis();
-   _u32 remainingtime;
    rplidar_response_measurement_node_t node;
    _u8 *nodebuf = (_u8*)&node;
 
    _u8 recvPos = 0;
 
-   while ((remainingtime=millis() - currentTs) <= timeout) {
-        int currentbyte = _bined_serialdev->read();
+    int currentbyte = -1;
+   // By allowing the loop to continue as long as there is data read or the timeout has not yet been reached
+   // we avoid doing the time check on every byte. For most Arudinos this will increase the max number of samples
+   // that can processed per second by as much as 40% (tested on Arduino Leonardo) - @avirtuos
+   while (currentbyte != -1 || millis() - currentTs <= timeout) {
+        currentbyte = _bined_serialdev->read();
         if (currentbyte<0) continue;
 
         switch (recvPos) {
@@ -302,9 +303,8 @@ u_result RPLidar::_waitResponseHeader(rplidar_ans_header_t * header, _u32 timeou
 {
     _u8  recvPos = 0;
     _u32 currentTs = millis();
-    _u32 remainingtime;
     _u8 *headerbuf = (_u8*)header;
-    while ((remainingtime=millis() - currentTs) <= timeout) {
+    while (millis() - currentTs <= timeout) {
 
         int currentbyte = _bined_serialdev->read();
         if (currentbyte<0) continue;
