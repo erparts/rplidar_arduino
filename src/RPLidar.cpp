@@ -1,28 +1,28 @@
 /*
  * RoboPeak RPLIDAR Driver for Arduino
  * RoboPeak.com
- * 
- * Copyright (c) 2014, RoboPeak 
+ *
+ * Copyright (c) 2014, RoboPeak
  * All rights reserved.
  *
- * Redistribution and use in source and binary forms, with or without modification, 
+ * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
  *
- * 1. Redistributions of source code must retain the above copyright notice, 
+ * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
  *
- * 2. Redistributions in binary form must reproduce the above copyright notice, 
- *    this list of conditions and the following disclaimer in the documentation 
+ * 2. Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY 
- * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES 
- * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT 
- * SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, 
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT 
- * OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) 
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR 
- * TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, 
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+ * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
+ * SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT
+ * OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
+ * TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  */
@@ -45,10 +45,10 @@ RPLidar::~RPLidar()
 }
 
 // open the given serial interface and try to connect to the RPLIDAR
-bool RPLidar::begin(HardwareSerial &serialobj)
+void RPLidar::begin(HardwareSerial &serialobj)
 {
     if (isOpen()) {
-      end(); 
+      end();
     }
     _bined_serialdev = &serialobj;
     _bined_serialdev->end();
@@ -68,7 +68,7 @@ void RPLidar::end()
 // check whether the serial interface is opened
 bool RPLidar::isOpen()
 {
-    return _bined_serialdev?true:false; 
+    return _bined_serialdev?true:false;
 }
 
 // ask the RPLIDAR for its health info
@@ -76,7 +76,7 @@ u_result RPLidar::getHealth(rplidar_response_device_health_t & healthinfo, _u32 
 {
     _u32 currentTs = millis();
     _u32 remainingtime;
-  
+
     _u8 *infobuf = (_u8 *)&healthinfo;
     _u8 recvPos = 0;
 
@@ -103,11 +103,11 @@ u_result RPLidar::getHealth(rplidar_response_device_health_t & healthinfo, _u32 
         if ((response_header.size) < sizeof(rplidar_response_device_health_t)) {
             return RESULT_INVALID_DATA;
         }
-        
+
         while ((remainingtime=millis() - currentTs) <= timeout) {
             int currentbyte = _bined_serialdev->read();
             if (currentbyte < 0) continue;
-            
+
             infobuf[recvPos++] = currentbyte;
 
             if (recvPos == sizeof(rplidar_response_device_health_t)) {
@@ -150,7 +150,7 @@ u_result RPLidar::getDeviceInfo(rplidar_response_device_info_t & info, _u32 time
 
         while ((remainingtime=millis() - currentTs) <= timeout) {
             int currentbyte = _bined_serialdev->read();
-            if (currentbyte<0) continue;    
+            if (currentbyte<0) continue;
             infobuf[recvPos++] = currentbyte;
 
             if (recvPos == sizeof(rplidar_response_device_info_t)) {
@@ -158,7 +158,7 @@ u_result RPLidar::getDeviceInfo(rplidar_response_device_info_t & info, _u32 time
             }
         }
     }
-    
+
     return RESULT_OPERATION_TIMEOUT;
 }
 
@@ -176,7 +176,7 @@ u_result RPLidar::startScan(bool force, _u32 timeout)
     u_result ans;
 
     if (!isOpen()) return RESULT_OPERATION_FAIL;
-    
+
     stop(); //force the previous operation to stop
 
     {
@@ -248,7 +248,7 @@ u_result RPLidar::waitPoint(_u32 timeout)
               _currentMeasurement.startBit = (node.sync_quality & RPLIDAR_RESP_MEASUREMENT_SYNCBIT);
               return RESULT_OK;
           }
-        
+
    }
 
    return RESULT_OPERATION_TIMEOUT;
@@ -305,7 +305,7 @@ u_result RPLidar::_waitResponseHeader(rplidar_ans_header_t * header, _u32 timeou
     _u32 remainingtime;
     _u8 *headerbuf = (_u8*)header;
     while ((remainingtime=millis() - currentTs) <= timeout) {
-        
+
         int currentbyte = _bined_serialdev->read();
         if (currentbyte<0) continue;
         switch (recvPos) {
@@ -326,7 +326,7 @@ u_result RPLidar::_waitResponseHeader(rplidar_ans_header_t * header, _u32 timeou
         if (recvPos == sizeof(rplidar_ans_header_t)) {
             return RESULT_OK;
         }
-  
+
 
     }
 
