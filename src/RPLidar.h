@@ -50,13 +50,9 @@ public:
     };
 
     RPLidar();
-    ~RPLidar();
 
     // open the given serial interface and try to connect to the RPLIDAR
     void begin(HardwareSerial &serialobj);
-
-    // close the currently opened serial interface
-    void end();
 
     // check whether the serial interface is opened
     bool isOpen();

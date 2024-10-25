@@ -38,30 +38,10 @@ RPLidar::RPLidar()
     _currentMeasurement.startBit = 0;
 }
 
-
-RPLidar::~RPLidar()
-{
-    end();
-}
-
 // open the given serial interface and try to connect to the RPLIDAR
 void RPLidar::begin(HardwareSerial &serialobj)
 {
-    if (isOpen()) {
-      end();
-    }
     _bined_serialdev = &serialobj;
-    _bined_serialdev->end();
-    _bined_serialdev->begin(RPLIDAR_SERIAL_BAUDRATE);
-}
-
-// close the currently opened serial interface
-void RPLidar::end()
-{
-    if (isOpen()) {
-       _bined_serialdev->end();
-       _bined_serialdev = NULL;
-    }
 }
 
 
@@ -127,7 +107,6 @@ u_result RPLidar::getDeviceInfo(rplidar_response_device_info_t & info, _u32 time
     u_result  ans;
 
     if (!isOpen()) return RESULT_OPERATION_FAIL;
-
     {
         if (IS_FAIL(ans = _sendCommand(RPLIDAR_CMD_GET_DEVICE_INFO,NULL,0))) {
             return ans;
@@ -174,6 +153,7 @@ u_result RPLidar::startScan(bool force, _u32 timeout)
     u_result ans;
 
     if (!isOpen()) return RESULT_OPERATION_FAIL;
+
 
     stop(); //force the previous operation to stop
 
